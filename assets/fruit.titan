@@ -1,0 +1,45 @@
+(
+    configuration: (
+        initial_size: (1024, 1024),
+        max_size: (1024, 1024),
+        padding: (2, 2),
+    ),
+    textures: [
+        (
+            path: "cherry.png",
+        ),
+        (
+            path: "grapes.png",
+        ),
+        (
+            path: "strawberry.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png",
+        ),
+        (
+            path: "unimplemented.png", /* TODO: One to many? */
+        ),
+    ]
+)
