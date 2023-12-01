@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use bevy_xpbd_2d::components::RigidBody;
+use strum::EnumCount;
+use strum_macros::EnumCount;
 
 use crate::asset_loading::FruitAssets;
 
-#[derive(Debug, Component, PartialEq, PartialOrd, Eq, Ord, Clone, Copy)]
+#[derive(Debug, Component, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, EnumCount)]
 pub enum Fruit {
     Cherry,
     Strawberry,
@@ -46,6 +48,25 @@ impl Fruit {
             Fruit::Pineapple => Some(Fruit::Melon),
             Fruit::Melon => Some(Fruit::Watermelon),
             Fruit::Watermelon => None,
+        }
+    }
+
+    pub fn from_index(index: usize) -> Self {
+        let index = index % Self::COUNT;
+
+        match index {
+            0 => Fruit::Cherry,
+            1 => Fruit::Strawberry,
+            2 => Fruit::Grapes,
+            3 => Fruit::Dekopon,
+            4 => Fruit::Persimmon,
+            5 => Fruit::Apple,
+            6 => Fruit::Pear,
+            7 => Fruit::Peach,
+            8 => Fruit::Pineapple,
+            9 => Fruit::Melon,
+            10 => Fruit::Watermelon,
+            _ => panic!("Unexpected Fruit from index"),
         }
     }
 }

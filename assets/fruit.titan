@@ -1,7 +1,5 @@
 (
     configuration: (
-        initial_size: (1024, 1024),
-        max_size: (1024, 1024),
         padding: (2, 2),
     ),
     textures: [
@@ -9,34 +7,34 @@
             path: "cherry.png",
         ),
         (
-            path: "grapes.png",
-        ),
-        (
             path: "strawberry.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "grapes.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "dekopon.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "persimmon.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "apple.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "pear.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "peach.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "pineapple.png",
         ),
         (
-            path: "unimplemented.png",
+            path: "melon.png",
+        ),
+        (
+            path: "watermelon.png",
         ),
         (
             path: "unimplemented.png", /* TODO: One to many? */

@@ -8,6 +8,10 @@ use std::time::Duration;
 
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 
+use bevy_prng::ChaCha8Rng;
+use bevy_rand::prelude::*;
+use rand_core::RngCore;
+
 use crate::fruits::Fruit;
 
 mod asset_loading;
@@ -22,6 +26,7 @@ impl Plugin for XpbdExamplePlugin {
             PhysicsPlugins::default(),
             FrameTimeDiagnosticsPlugin,
             AssetLoadingPlugin,
+            EntropyPlugin::<ChaCha8Rng>::default(),
         ))
         .add_systems(Startup, setup_plugin)
         .add_systems(
@@ -37,7 +42,7 @@ impl Plugin for XpbdExamplePlugin {
         .add_systems(Update, step_button.run_if(in_state(AppState::Paused)))
         .add_systems(
             Update,
-            (spawn_ball_at_cursor, merge_fruit).run_if(in_state(AppState::Running)),
+            (spawn_ball_at_cursor_x, merge_fruit).run_if(in_state(AppState::Running)),
         );
     }
 }
@@ -131,8 +136,8 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             sprite: square_sprite.clone(),
-            transform: Transform::from_xyz(0.0, -50.0 * 6.0, 0.0)
-                .with_scale(Vec3::new(20.0, 1.0, 1.0)),
+            transform: Transform::from_xyz(0.0, -50.0 * 5.0, 0.0)
+                .with_scale(Vec3::new(9.0, 1.0, 1.0)),
             ..default()
         },
         RigidBody::Static,
@@ -142,8 +147,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             sprite: square_sprite.clone(),
-            transform: Transform::from_xyz(-50.0 * 9.5, 0.0, 0.0)
-                .with_scale(Vec3::new(1.0, 11.0, 1.0)),
+            transform: Transform::from_xyz(-200.0, 0.0, 0.0).with_scale(Vec3::new(1.0, 9.0, 1.0)),
             ..default()
         },
         RigidBody::Static,
@@ -153,8 +157,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             sprite: square_sprite,
-            transform: Transform::from_xyz(50.0 * 9.5, 0.0, 0.0)
-                .with_scale(Vec3::new(1.0, 11.0, 1.0)),
+            transform: Transform::from_xyz(200.0, 0.0, 0.0).with_scale(Vec3::new(1.0, 9.0, 1.0)),
             ..default()
         },
         RigidBody::Static,
@@ -162,12 +165,13 @@ fn setup(mut commands: Commands) {
     ));
 }
 
-fn spawn_ball_at_cursor(
+fn spawn_ball_at_cursor_x(
     mut commands: Commands,
     mut mousebtn_evr: EventReader<MouseButtonInput>,
     windows: Query<&Window>,
     cameras: Query<(&Camera, &GlobalTransform)>,
     fruit_assets: Res<FruitAssets>,
+    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
 ) {
     use bevy::input::ButtonState;
 
@@ -182,10 +186,11 @@ fn spawn_ball_at_cursor(
                 .map(|ray| ray.origin.truncate())
             {
                 eprintln!("World coords: {}/{}", world_position.x, world_position.y);
-                let transform = Transform::from_xyz(world_position.x, world_position.y, 0.0)
-                    .with_scale(Vec3::splat(4.0));
+                let transform =
+                    Transform::from_xyz(world_position.x, 280.0, 0.0).with_scale(Vec3::splat(4.0));
 
-                commands.spawn(Fruit::Cherry.bundle(&fruit_assets, transform));
+                let index = rng.next_u32() as usize;
+                commands.spawn(Fruit::from_index(index).bundle(&fruit_assets, transform));
             }
         }
     }
@@ -203,7 +208,7 @@ fn merge_fruit(
         {
             if fruit_a.2 == fruit_b.2 {
                 if let Some(next) = fruit_a.2.next() {
-                    commands.get_entity(fruit_b.0).map(|mut e| {
+                    commands.get_entity(fruit_a.0).map(|mut e| {
                         e.despawn();
                         Some(())
                     });
