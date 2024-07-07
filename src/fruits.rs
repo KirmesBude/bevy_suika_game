@@ -23,12 +23,12 @@ pub enum Fruit {
 impl Fruit {
     pub fn bundle(self, fruit_assets: &FruitAssets, transform: Transform) -> impl Bundle {
         (
-            SpriteSheetBundle {
-                sprite: FruitAssets::texture_atlas_sprite(&self),
-                texture_atlas: fruit_assets.texture_atlas.clone_weak(),
+            SpriteBundle {
+                texture: fruit_assets.texture.clone_weak(),
                 transform,
                 ..Default::default()
             },
+            fruit_assets.texture_atlas(&self),
             RigidBody::Dynamic,
             FruitAssets::collider(&self),
             self,

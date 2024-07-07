@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 
-use bevy_prng::ChaCha8Rng;
+use bevy_prng::WyRand;
 use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
@@ -26,7 +26,7 @@ impl Plugin for XpbdExamplePlugin {
             PhysicsPlugins::default(),
             FrameTimeDiagnosticsPlugin,
             AssetLoadingPlugin,
-            EntropyPlugin::<ChaCha8Rng>::default(),
+            EntropyPlugin::<WyRand>::default(),
         ))
         .add_systems(Startup, setup_plugin)
         .add_systems(
@@ -58,20 +58,20 @@ pub enum AppState {
 fn pause_button(
     current_state: ResMut<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
 ) {
-    if keys.just_pressed(KeyCode::P) {
+    if keys.just_pressed(KeyCode::KeyP) {
         let new_state = match current_state.get() {
             AppState::Paused => AppState::Running,
             AppState::Running => AppState::Paused,
             AppState::Loading => AppState::Loading,
         };
-        next_state.0 = Some(new_state);
+        next_state.set(new_state);
     }
 }
 
-fn step_button(mut time: ResMut<Time<Physics>>, keys: Res<Input<KeyCode>>) {
-    if keys.just_pressed(KeyCode::Return) {
+fn step_button(mut time: ResMut<Time<Physics>>, keys: Res<ButtonInput<KeyCode>>) {
+    if keys.just_pressed(KeyCode::Enter) {
         time.advance_by(Duration::from_secs_f64(1.0 / 60.0));
     }
 }
@@ -86,7 +86,7 @@ fn setup_plugin(mut commands: Commands) {
             TextStyle {
                 font: default(),
                 font_size: 20.0,
-                color: Color::TOMATO,
+                color: Color::WHITE,
             },
         )
         .with_style(Style {
@@ -101,7 +101,7 @@ fn setup_plugin(mut commands: Commands) {
 
 fn update_fps_text(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in &mut query {
-        if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+        if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
                 // Update the value of the second section
                 text.sections[0].value = format!("FPS: {value:.2}");
@@ -171,7 +171,7 @@ fn spawn_ball_at_cursor_x(
     windows: Query<&Window>,
     cameras: Query<(&Camera, &GlobalTransform)>,
     fruit_assets: Res<FruitAssets>,
-    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
     use bevy::input::ButtonState;
 

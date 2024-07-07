@@ -4,7 +4,7 @@ use bevy_asset_loader::{
     loading_state::{LoadingState, LoadingStateAppExt},
 };
 use bevy_titan::SpriteSheetLoaderPlugin;
-use bevy_xpbd_2d::{components::Collider, math::Scalar};
+use bevy_xpbd_2d::{math::Scalar, prelude::*};
 
 use crate::{fruits::Fruit, AppState};
 
@@ -13,7 +13,7 @@ pub struct AssetLoadingPlugin;
 impl Plugin for AssetLoadingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugins(SpriteSheetLoaderPlugin)
-            .add_state::<AppState>()
+            .init_state::<AppState>()
             .add_loading_state(
                 LoadingState::new(AppState::Loading).continue_to_state(AppState::Running),
             )
@@ -23,8 +23,10 @@ impl Plugin for AssetLoadingPlugin {
 
 #[derive(Debug, AssetCollection, Resource)]
 pub struct FruitAssets {
-    #[asset(path = "fruit.titan")]
-    pub texture_atlas: Handle<TextureAtlas>,
+    #[asset(path = "fruit.titan#texture")]
+    pub texture: Handle<Image>,
+    #[asset(path = "fruit.titan#layout")]
+    pub layout: Handle<TextureAtlasLayout>,
 }
 
 impl FruitAssets {
@@ -45,13 +47,16 @@ impl FruitAssets {
     }
 
     pub fn collider(fruit: &Fruit) -> Collider {
-        Collider::ball(Self::radius(fruit) as Scalar)
+        Collider::circle(Self::radius(fruit) as Scalar)
     }
 
-    pub fn texture_atlas_sprite(fruit: &Fruit) -> TextureAtlasSprite {
+    pub fn texture_atlas(&self, fruit: &Fruit) -> TextureAtlas {
         let index = Self::index(fruit);
 
-        TextureAtlasSprite::new(index)
+        TextureAtlas {
+            layout: self.layout.clone_weak(),
+            index,
+        }
     }
 
     fn index(fruit: &Fruit) -> usize {
