@@ -4,7 +4,7 @@ use bevy_asset_loader::{
     loading_state::{LoadingState, LoadingStateAppExt},
 };
 use bevy_titan::SpriteSheetLoaderPlugin;
-use bevy_xpbd_2d::{math::Scalar, prelude::*};
+use avian2d::{math::Scalar, prelude::*};
 
 use crate::{fruits::Fruit, AppState};
 

@@ -2,7 +2,7 @@
 
 use asset_loading::{AssetLoadingPlugin, FruitAssets};
 use bevy::{input::mouse::MouseButtonInput, prelude::*};
-use bevy_xpbd_2d::{math::*, prelude::*};
+use avian2d::{math::Vector, prelude::*};
 
 use std::time::Duration;
 
@@ -141,7 +141,7 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         RigidBody::Static,
-        Collider::cuboid(50.0, 50.0),
+        Collider::rectangle(50.0, 50.0),
     ));
     // Left wall
     commands.spawn((
@@ -151,7 +151,7 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         RigidBody::Static,
-        Collider::cuboid(50.0, 50.0),
+        Collider::rectangle(50.0, 50.0),
     ));
     // Right wall
     commands.spawn((
@@ -161,7 +161,7 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         RigidBody::Static,
-        Collider::cuboid(50.0, 50.0),
+        Collider::rectangle(50.0, 50.0),
     ));
 }
 

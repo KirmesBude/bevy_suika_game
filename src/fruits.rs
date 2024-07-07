@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_xpbd_2d::components::RigidBody;
+use avian2d::dynamics::rigid_body::RigidBody;
 use strum::EnumCount;
 use strum_macros::EnumCount;
 
