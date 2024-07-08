@@ -69,4 +69,20 @@ impl Fruit {
             _ => panic!("Unexpected Fruit from index"),
         }
     }
+
+    pub fn score(self) -> u32 {
+        match self {
+            Fruit::Cherry => 1,
+            Fruit::Strawberry => 3,
+            Fruit::Grapes => 6,
+            Fruit::Dekopon => 10,
+            Fruit::Persimmon => 15,
+            Fruit::Apple => 21,
+            Fruit::Pear => 28,
+            Fruit::Peach => 36,
+            Fruit::Pineapple => 45,
+            Fruit::Melon => 55,
+            Fruit::Watermelon => 66,
+        }
+    }
 }

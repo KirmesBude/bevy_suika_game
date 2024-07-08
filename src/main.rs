@@ -38,6 +38,7 @@ impl Plugin for XpbdExamplePlugin {
             |mut time: ResMut<Time<Physics>>| time.unpause(),
         )
         .add_systems(Update, update_fps_text)
+        .add_systems(Update, update_score_text)
         .add_systems(Update, pause_button)
         .add_systems(Update, step_button.run_if(in_state(AppState::Paused)))
         .add_systems(
@@ -79,6 +80,9 @@ fn step_button(mut time: ResMut<Time<Physics>>, keys: Res<ButtonInput<KeyCode>>)
 #[derive(Component)]
 struct FpsText;
 
+#[derive(Component)]
+struct ScoreText;
+
 fn setup_plugin(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
@@ -97,16 +101,42 @@ fn setup_plugin(mut commands: Commands) {
         }),
         FpsText,
     ));
+
+    commands.spawn((
+        TextBundle::from_section(
+            "Score: ",
+            TextStyle {
+                font: default(),
+                font_size: 20.0,
+                color: Color::WHITE,
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(20.0),
+            left: Val::Px(5.0),
+
+            ..default()
+        }),
+        ScoreText,
+    ));
 }
 
 fn update_fps_text(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<FpsText>>) {
     for mut text in &mut query {
         if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
-                // Update the value of the second section
                 text.sections[0].value = format!("FPS: {value:.2}");
             }
         }
+    }
+}
+
+fn update_score_text(fruits: Query<&Fruit>, mut query: Query<&mut Text, With<ScoreText>>) {
+    let score: u32 = fruits.iter().map(|fruit| fruit.score()).sum();
+
+    for mut text in &mut query {
+        text.sections[0].value = format!("Score: {score}");
     }
 }
 
