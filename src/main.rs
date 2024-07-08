@@ -43,7 +43,12 @@ impl Plugin for XpbdExamplePlugin {
         .add_systems(Update, step_button.run_if(in_state(AppState::Paused)))
         .add_systems(
             Update,
-            (spawn_ball_at_cursor_x, remove_new_fruit, merge_fruit)
+            (
+                spawn_ball_at_cursor_x,
+                remove_new_fruit,
+                game_over,
+                merge_fruit,
+            )
                 .run_if(in_state(AppState::Running)),
         );
     }
@@ -203,8 +208,13 @@ fn spawn_ball_at_cursor_x(
     cameras: Query<(&Camera, &GlobalTransform)>,
     fruit_assets: Res<FruitAssets>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
+    new_fruits: Query<(), With<NewFruit>>,
 ) {
     use bevy::input::ButtonState;
+
+    if !new_fruits.is_empty() {
+        return;
+    }
 
     for ev in mousebtn_evr.read() {
         if ev.button == MouseButton::Left && ev.state == ButtonState::Pressed {
@@ -273,5 +283,14 @@ fn remove_new_fruit(
         };
 
         commands.entity(new_fruit).remove::<NewFruit>();
+    }
+}
+
+fn game_over(fruits: Query<&GlobalTransform, (With<Fruit>, Without<NewFruit>)>) {
+    if fruits
+        .iter()
+        .any(|transform| transform.translation().y > 250.0)
+    {
+        println!("Game Over");
     }
 }
