@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use avian2d::dynamics::rigid_body::RigidBody;
+use bevy::prelude::*;
 use strum::EnumCount;
 use strum_macros::EnumCount;
 
@@ -52,7 +52,7 @@ impl Fruit {
     }
 
     pub fn from_index(index: usize) -> Self {
-        let index = index % Self::COUNT;
+        let index = index % (Self::COUNT - 8);
 
         match index {
             0 => Fruit::Cherry,

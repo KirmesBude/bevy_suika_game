@@ -1,10 +1,10 @@
+use avian2d::{math::Scalar, prelude::*};
 use bevy::prelude::*;
 use bevy_asset_loader::{
     asset_collection::AssetCollection,
-    loading_state::{LoadingState, LoadingStateAppExt},
+    loading_state::{config::ConfigureLoadingState, LoadingState, LoadingStateAppExt},
 };
 use bevy_titan::SpriteSheetLoaderPlugin;
-use avian2d::{math::Scalar, prelude::*};
 
 use crate::{fruits::Fruit, AppState};
 
@@ -15,9 +15,10 @@ impl Plugin for AssetLoadingPlugin {
         app.add_plugins(SpriteSheetLoaderPlugin)
             .init_state::<AppState>()
             .add_loading_state(
-                LoadingState::new(AppState::Loading).continue_to_state(AppState::Running),
-            )
-            .add_collection_to_loading_state::<_, FruitAssets>(AppState::Loading);
+                LoadingState::new(AppState::Loading)
+                    .continue_to_state(AppState::Running)
+                    .load_collection::<FruitAssets>(),
+            );
     }
 }
 
