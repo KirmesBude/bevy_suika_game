@@ -43,7 +43,8 @@ impl Plugin for XpbdExamplePlugin {
         .add_systems(Update, step_button.run_if(in_state(AppState::Paused)))
         .add_systems(
             Update,
-            (spawn_ball_at_cursor_x, merge_fruit).run_if(in_state(AppState::Running)),
+            (spawn_ball_at_cursor_x, remove_new_fruit, merge_fruit)
+                .run_if(in_state(AppState::Running)),
         );
     }
 }
@@ -140,6 +141,9 @@ fn update_score_text(fruits: Query<&Fruit>, mut query: Query<&mut Text, With<Sco
     }
 }
 
+#[derive(Component)]
+struct NewFruit;
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, XpbdExamplePlugin))
@@ -217,7 +221,9 @@ fn spawn_ball_at_cursor_x(
                     Transform::from_xyz(world_position.x, 280.0, 0.0).with_scale(Vec3::splat(4.0));
 
                 let index = rng.next_u32() as usize;
-                commands.spawn(Fruit::from_index(index).bundle(&fruit_assets, transform));
+                commands
+                    .spawn(Fruit::from_index(index).bundle(&fruit_assets, transform))
+                    .insert(NewFruit);
             }
         }
     }
@@ -251,5 +257,21 @@ fn merge_fruit(
                 }
             }
         }
+    }
+}
+
+fn remove_new_fruit(
+    mut commands: Commands,
+    fruits: Query<Entity, (With<Fruit>, With<NewFruit>)>,
+    mut collision_event_reader: EventReader<Collision>,
+) {
+    for Collision(contacts) in collision_event_reader.read() {
+        let new_fruit = match (fruits.get(contacts.entity1), fruits.get(contacts.entity2)) {
+            (Ok(fruit), Err(_)) => fruit,
+            (Err(_), Ok(fruit)) => fruit,
+            _ => continue,
+        };
+
+        commands.entity(new_fruit).remove::<NewFruit>();
     }
 }
