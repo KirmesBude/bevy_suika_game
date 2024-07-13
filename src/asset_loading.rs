@@ -61,7 +61,7 @@ impl FruitAssets {
         }
     }
 
-    fn index(fruit: &Fruit) -> usize {
+    pub fn index(fruit: &Fruit) -> usize {
         match fruit {
             Fruit::Cherry => 0,
             Fruit::Strawberry => 1,

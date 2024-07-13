@@ -28,6 +28,7 @@ impl Plugin for XpbdExamplePlugin {
             AssetLoadingPlugin,
             EntropyPlugin::<WyRand>::default(),
         ))
+        .init_resource::<NextFruit>()
         .add_systems(Startup, setup_plugin)
         .add_systems(
             OnEnter(AppState::Paused),
@@ -49,10 +50,11 @@ impl Plugin for XpbdExamplePlugin {
                 remove_new_fruit,
                 game_over,
                 merge_fruit,
+                show_next_fruit,
             )
                 .run_if(in_state(AppState::Running)),
         )
-        .add_systems(OnEnter(AppState::Running), spawn_cloud);
+        .add_systems(OnEnter(AppState::Running), (spawn_cloud, spawn_next_fruit));
     }
 }
 
@@ -221,6 +223,7 @@ fn spawn_ball_at_cloud(
     fruit_assets: Res<FruitAssets>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
     new_fruits: Query<(), With<NewFruit>>,
+    mut next_fruit: ResMut<NextFruit>,
 ) {
     use bevy::input::ButtonState;
 
@@ -234,10 +237,13 @@ fn spawn_ball_at_cloud(
             let transform = Transform::from_xyz(cloud_transform.translation().x, 280.0, 0.0)
                 .with_scale(Vec3::splat(4.0));
 
-            let index = rng.next_u32() as usize;
             commands
-                .spawn(Fruit::from_index(index).bundle(&fruit_assets, transform))
+                .spawn(next_fruit.0.bundle(&fruit_assets, transform))
                 .insert(NewFruit);
+
+            // Compute new fruit
+            let index = rng.next_u32() as usize;
+            next_fruit.0 = Fruit::from_index(index % 5);
         }
     }
 }
@@ -325,5 +331,45 @@ fn cloud_to_mouse_x(
     {
         let mut transform = q_cloud.single_mut();
         transform.translation.x = world_position.x.clamp(-130.0, 130.0);
+    }
+}
+
+#[derive(Resource, Default)]
+struct NextFruit(Fruit);
+
+#[derive(Component)]
+struct NextFruitUi;
+
+fn spawn_next_fruit(
+    mut commands: Commands,
+    fruit_assets: Res<FruitAssets>,
+    ui_assets: Res<UiAssets>,
+) {
+    let transform = Transform::from_xyz(420.0, -200.0, 0.0).with_scale(Vec3::splat(4.0));
+    commands
+        .spawn(SpriteBundle {
+            transform,
+            texture: fruit_assets.texture.clone_weak(),
+            ..Default::default()
+        })
+        .insert(fruit_assets.texture_atlas(&Fruit::default()))
+        .insert(NextFruitUi);
+
+    commands
+        .spawn(SpriteBundle {
+            transform,
+            texture: ui_assets.texture.clone_weak(),
+            ..Default::default()
+        })
+        .insert(ui_assets.bubble());
+}
+
+fn show_next_fruit(
+    mut q_next_fruit_ui: Query<&mut TextureAtlas, With<NextFruitUi>>,
+    next_fruit: Res<NextFruit>,
+) {
+    if next_fruit.is_changed() {
+        let mut texture_atlas = q_next_fruit_ui.single_mut();
+        texture_atlas.index = FruitAssets::index(&next_fruit.0);
     }
 }

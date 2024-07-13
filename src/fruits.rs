@@ -5,8 +5,9 @@ use strum_macros::EnumCount;
 
 use crate::asset_loading::FruitAssets;
 
-#[derive(Debug, Component, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, EnumCount)]
+#[derive(Default, Debug, Component, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, EnumCount)]
 pub enum Fruit {
+    #[default]
     Cherry,
     Strawberry,
     Grapes,
@@ -52,7 +53,7 @@ impl Fruit {
     }
 
     pub fn from_index(index: usize) -> Self {
-        let index = index % (Self::COUNT - 8);
+        let index = index % Self::COUNT;
 
         match index {
             0 => Fruit::Cherry,
