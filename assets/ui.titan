@@ -1,0 +1,13 @@
+(
+    configuration: (
+        padding: (2, 2),
+    ),
+    textures: [
+        (
+            path: "cloud.png",
+        ),
+        (
+            path: "bubble.png",
+        ),
+    ]
+)

@@ -1,8 +1,8 @@
 #![allow(clippy::unnecessary_cast)]
 
-use asset_loading::{AssetLoadingPlugin, FruitAssets};
+use asset_loading::{AssetLoadingPlugin, FruitAssets, UiAssets};
 use avian2d::{math::Vector, prelude::*};
-use bevy::{input::mouse::MouseButtonInput, prelude::*};
+use bevy::{input::mouse::MouseButtonInput, prelude::*, window::PrimaryWindow};
 
 use std::time::Duration;
 
@@ -44,13 +44,15 @@ impl Plugin for XpbdExamplePlugin {
         .add_systems(
             Update,
             (
-                spawn_ball_at_cursor_x,
+                cloud_to_mouse_x,
+                spawn_ball_at_cloud,
                 remove_new_fruit,
                 game_over,
                 merge_fruit,
             )
                 .run_if(in_state(AppState::Running)),
-        );
+        )
+        .add_systems(OnEnter(AppState::Running), spawn_cloud);
     }
 }
 
@@ -160,7 +162,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default()).insert(MainCamera);
 
     let square_sprite = Sprite {
         color: Color::srgb(0.7, 0.7, 0.8),
@@ -201,11 +203,21 @@ fn setup(mut commands: Commands) {
     ));
 }
 
-fn spawn_ball_at_cursor_x(
+fn spawn_cloud(mut commands: Commands, ui_assets: Res<UiAssets>) {
+    commands
+        .spawn(SpriteBundle {
+            transform: Transform::from_xyz(0.0, 280.0, 0.0).with_scale(Vec3::splat(4.0)),
+            texture: ui_assets.texture.clone_weak(),
+            ..Default::default()
+        })
+        .insert(ui_assets.cloud())
+        .insert(Cloud);
+}
+
+fn spawn_ball_at_cloud(
     mut commands: Commands,
     mut mousebtn_evr: EventReader<MouseButtonInput>,
-    windows: Query<&Window>,
-    cameras: Query<(&Camera, &GlobalTransform)>,
+    q_cloud: Query<&GlobalTransform, With<Cloud>>,
     fruit_assets: Res<FruitAssets>,
     mut rng: ResMut<GlobalEntropy<WyRand>>,
     new_fruits: Query<(), With<NewFruit>>,
@@ -218,23 +230,14 @@ fn spawn_ball_at_cursor_x(
 
     for ev in mousebtn_evr.read() {
         if ev.button == MouseButton::Left && ev.state == ButtonState::Pressed {
-            let window = windows.get(ev.window).unwrap();
-            let (camera, camera_transform) = cameras.get_single().unwrap();
+            let cloud_transform = q_cloud.single();
+            let transform = Transform::from_xyz(cloud_transform.translation().x, 280.0, 0.0)
+                .with_scale(Vec3::splat(4.0));
 
-            if let Some(world_position) = window
-                .cursor_position()
-                .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-                .map(|ray| ray.origin.truncate())
-            {
-                eprintln!("World coords: {}/{}", world_position.x, world_position.y);
-                let transform =
-                    Transform::from_xyz(world_position.x, 280.0, 0.0).with_scale(Vec3::splat(4.0));
-
-                let index = rng.next_u32() as usize;
-                commands
-                    .spawn(Fruit::from_index(index).bundle(&fruit_assets, transform))
-                    .insert(NewFruit);
-            }
+            let index = rng.next_u32() as usize;
+            commands
+                .spawn(Fruit::from_index(index).bundle(&fruit_assets, transform))
+                .insert(NewFruit);
         }
     }
 }
@@ -292,5 +295,35 @@ fn game_over(fruits: Query<&GlobalTransform, (With<Fruit>, Without<NewFruit>)>) 
         .any(|transform| transform.translation().y > 250.0)
     {
         println!("Game Over");
+    }
+}
+
+#[derive(Component)]
+struct Cloud;
+
+#[derive(Component)]
+struct MainCamera;
+
+fn cloud_to_mouse_x(
+    mut q_cloud: Query<&mut Transform, With<Cloud>>,
+    q_window: Query<&Window, With<PrimaryWindow>>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+) {
+    // get the camera info and transform
+    // assuming there is exactly one main camera entity, so Query::single() is OK
+    let (camera, camera_transform) = q_camera.single();
+
+    // There is only one primary window, so we can similarly get it from the query:
+    let window = q_window.single();
+
+    // check if the cursor is inside the window and get its position
+    // then, ask bevy to convert into world coordinates, and truncate to discard Z
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        let mut transform = q_cloud.single_mut();
+        transform.translation.x = world_position.x.clamp(-130.0, 130.0);
     }
 }

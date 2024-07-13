@@ -17,7 +17,8 @@ impl Plugin for AssetLoadingPlugin {
             .add_loading_state(
                 LoadingState::new(AppState::Loading)
                     .continue_to_state(AppState::Running)
-                    .load_collection::<FruitAssets>(),
+                    .load_collection::<FruitAssets>()
+                    .load_collection::<UiAssets>(),
             );
     }
 }
@@ -73,6 +74,30 @@ impl FruitAssets {
             Fruit::Pineapple => 8,
             Fruit::Melon => 9,
             Fruit::Watermelon => 10,
+        }
+    }
+}
+
+#[derive(Debug, AssetCollection, Resource)]
+pub struct UiAssets {
+    #[asset(path = "ui.titan#texture")]
+    pub texture: Handle<Image>,
+    #[asset(path = "ui.titan#layout")]
+    pub layout: Handle<TextureAtlasLayout>,
+}
+
+impl UiAssets {
+    pub fn cloud(&self) -> TextureAtlas {
+        TextureAtlas {
+            layout: self.layout.clone_weak(),
+            index: 0,
+        }
+    }
+
+    pub fn bubble(&self) -> TextureAtlas {
+        TextureAtlas {
+            layout: self.layout.clone_weak(),
+            index: 1,
         }
     }
 }
