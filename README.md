@@ -1,0 +1,1 @@
+Simple suika game clone using avian for physics and bevy_titan for the spritesheet.

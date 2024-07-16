@@ -8,10 +8,8 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.14.0", features = ["wayland", "dynamic_linking"] }
 bevy_titan = "0.7.0"
-bevy_trickfilm = "0.7.0"
 bevy_asset_loader = "0.21.0"
 avian2d = "0.1"
-bevy_eventlistener = "0.8"
 strum = "0.26"
 strum_macros = "0.26"
 rand_core = "0.6"
